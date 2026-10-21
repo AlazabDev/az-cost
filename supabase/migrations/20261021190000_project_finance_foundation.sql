@@ -2,6 +2,9 @@
 -- Apply on staging first. Does not modify existing expense records.
 BEGIN;
 
+-- Existing projects need a composite unique key for cross-owner foreign keys.
+CREATE UNIQUE INDEX IF NOT EXISTS finance_projects_id_user_idx ON public.projects (id,user_id);
+
 CREATE TABLE IF NOT EXISTS public.finance_vendors (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id),
@@ -96,9 +99,6 @@ CREATE TABLE IF NOT EXISTS public.finance_budget_lines (
   UNIQUE (budget_id,cost_code_id)
 );
 
--- Existing projects need a composite unique key for cross-owner foreign keys.
-CREATE UNIQUE INDEX IF NOT EXISTS finance_projects_id_user_idx ON public.projects (id,user_id);
-
 CREATE INDEX IF NOT EXISTS finance_invoices_project_idx ON public.finance_invoices(project_id,invoice_date);
 CREATE INDEX IF NOT EXISTS finance_invoices_vendor_idx ON public.finance_invoices(vendor_id,invoice_date);
 CREATE INDEX IF NOT EXISTS finance_payments_invoice_idx ON public.finance_invoice_payments(invoice_id);
@@ -174,6 +174,9 @@ CREATE OR REPLACE FUNCTION public.finance_validate_payment()
 RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
 DECLARE v_state text; v_total numeric(18,2); v_paid numeric(18,2);
 BEGIN
+  IF TG_OP = 'UPDATE' AND (NEW.invoice_id <> OLD.invoice_id OR NEW.user_id <> OLD.user_id) THEN
+    RAISE EXCEPTION 'Payment ownership and invoice allocation are immutable';
+  END IF;
   SELECT state INTO v_state FROM public.finance_invoices
   WHERE id=NEW.invoice_id FOR UPDATE;
   IF v_state IS DISTINCT FROM 'posted' THEN
