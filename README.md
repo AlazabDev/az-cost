@@ -20,8 +20,8 @@ AZ-PE is an Arabic-first project-finance application. The current released code 
 Requirements: Node.js 20+ and npm.
 
 ```bash
-git clone https://github.com/AlazabDev/az-pe.git
-cd az-pe
+git clone https://github.com/AlazabDev/az-cost.git
+cd az-cost
 git switch chat-gpt
 npm ci
 npm run dev
