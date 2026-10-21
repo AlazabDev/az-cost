@@ -1,19 +1,51 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ApplicationLayout from "./layouts/application-layout";
-import BillSplitter from "./pages/landing";
-import NotFound from "./pages/not-found";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { AppShell } from "@/components/app-shell";
+import AuthPage from "@/pages/auth";
+import ResetPasswordPage from "@/pages/reset-password";
+import DashboardPage from "@/pages/dashboard";
+import ProjectsPage from "@/pages/projects";
+import ExpensesPage from "@/pages/expenses";
+import ReportsPage from "@/pages/reports";
+import NotFound from "@/pages/not-found";
 
-// Bill Splitter is a client-only calculator (D1): one public route `/`, no auth,
-// no Supabase, no /demo/* — the tool is its own demo via the seed bill.
+function Protected({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
+        جارٍ التحميل…
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/auth" replace />;
+  return <>{children}</>;
+}
+
 const App = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route element={<ApplicationLayout />}>
-        <Route path="/" element={<BillSplitter />} />
-      </Route>
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  </BrowserRouter>
+  <AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          element={
+            <Protected>
+              <AppShell />
+            </Protected>
+          }
+        >
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster richColors position="top-center" />
+    </BrowserRouter>
+  </AuthProvider>
 );
 
 export default App;
