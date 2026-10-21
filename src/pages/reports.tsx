@@ -70,10 +70,10 @@ export default function ReportsPage() {
         directionLabel(e.direction),
         categoryLabel(e.category),
         e.vendor ?? "",
-        (e.notes ?? "").replaceAll("\n", " "),
+        (e.notes ?? "").replace(/\n/g, " "),
         String(e.amount),
       ]
-        .map((cell) => `"${String(cell).replaceAll('"', '""')}"`)
+        .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
         .join(","),
     );
     // BOM so Excel opens Arabic correctly
