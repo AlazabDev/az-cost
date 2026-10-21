@@ -145,6 +145,10 @@ BEGIN
     NEW.invoice_date IS DISTINCT FROM OLD.invoice_date OR
     NEW.state = 'draft'
   ) THEN RAISE EXCEPTION 'Cannot rewrite a posted invoice'; END IF;
+  IF NEW.state = 'posted' AND OLD.state = 'draft' AND NOT EXISTS
+    (SELECT 1 FROM public.finance_invoice_items WHERE invoice_id = OLD.id) THEN
+    RAISE EXCEPTION 'Cannot post invoice with no line items';
+  END IF;
   IF NEW.state = 'cancelled' AND OLD.state <> 'cancelled' AND
       EXISTS (SELECT 1 FROM public.finance_invoice_payments WHERE invoice_id = OLD.id) THEN
     RAISE EXCEPTION 'Reverse payments before cancelling an invoice';
@@ -159,6 +163,9 @@ CREATE OR REPLACE FUNCTION public.finance_guard_invoice_item()
 RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
 DECLARE v_state text;
 BEGIN
+  IF TG_OP = 'UPDATE' AND (NEW.invoice_id <> OLD.invoice_id OR NEW.user_id <> OLD.user_id) THEN
+    RAISE EXCEPTION 'Cannot move an invoice line between invoices';
+  END IF;
   SELECT state INTO v_state FROM public.finance_invoices
    WHERE id = COALESCE(NEW.invoice_id,OLD.invoice_id) FOR UPDATE;
   IF v_state IS DISTINCT FROM 'draft' THEN
