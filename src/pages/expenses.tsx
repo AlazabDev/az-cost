@@ -27,6 +27,9 @@ import {
 import { CATEGORY_LABELS, DIRECTION_LABELS, categoryLabel, directionLabel } from "@/lib/labels";
 import { formatDate, formatMoney, todayIso } from "@/lib/format";
 import { validateExpense } from "@/lib/expense-validation";
+import { ReceiptCapture } from "@/components/receipt-capture";
+import { saveExpenseWithReceipt } from "@/lib/save-expense";
+import { RECEIPT_ACCEPT, validateReceiptFile } from "@/lib/receipt-files";
 
 export default function ExpensesPage() {
   const { user } = useAuth();
@@ -79,20 +82,7 @@ export default function ExpensesPage() {
     }
     setBusy(true);
 
-    let receiptPath: string | null = null;
-    if (receipt) {
-      const ext = receipt.name.split(".").pop() ?? "jpg";
-      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("receipts").upload(path, receipt);
-      if (upErr) {
-        setBusy(false);
-        toast.error("تعذر رفع صورة الإيصال");
-        return;
-      }
-      receiptPath = path;
-    }
-
-    const { error } = await supabase.from("expenses").insert({
+    const error = await saveExpenseWithReceipt({
       user_id: user.id,
       project_id: projectId,
       amount: Number(amount),
@@ -100,12 +90,11 @@ export default function ExpensesPage() {
       category,
       vendor: vendor.trim() || null,
       notes: notes.trim() || null,
-      receipt_path: receiptPath,
       spent_at: spentAt,
-    });
+    }, receipt);
     setBusy(false);
     if (error) {
-      toast.error("تعذر حفظ العملية");
+      toast.error(error);
       return;
     }
     toast.success("تم تسجيل العملية");
@@ -141,8 +130,10 @@ export default function ExpensesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">المصروفات</h1>
+        <div className="flex flex-wrap gap-2">
+        {user && <ReceiptCapture projects={projects} userId={user.id} onSaved={() => void refetch()} />}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="sm" disabled={projects.length === 0}>
@@ -238,10 +229,16 @@ export default function ExpensesPage() {
                 <input
                   ref={fileRef}
                   type="file"
-                  accept="image/*"
-                  capture="environment"
+                  accept={RECEIPT_ACCEPT}
                   className="hidden"
-                  onChange={(e) => setReceipt(e.target.files?.[0] ?? null)}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const error = validateReceiptFile(file);
+                    if (error) toast.error(error);
+                    else setReceipt(file);
+                    e.target.value = "";
+                  }}
                 />
                 <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>
                   <IconCamera className="size-4" />
@@ -255,6 +252,7 @@ export default function ExpensesPage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Filters */}

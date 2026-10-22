@@ -16,7 +16,7 @@ export function validateExpense(draft: ExpenseDraft): string | null {
     return "حدد اتجاه العملية (مصروف أو دفعة مستلمة)";
   }
   const amount = Number(draft.amount);
-  if (!draft.amount.trim() || Number.isNaN(amount) || amount <= 0) {
+  if (!draft.amount.trim() || !Number.isFinite(amount) || amount <= 0) {
     return "أدخل مبلغًا صحيحًا أكبر من صفر";
   }
   return null;

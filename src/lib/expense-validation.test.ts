@@ -17,6 +17,7 @@ describe("validateExpense", () => {
     expect(validateExpense({ ...valid, amount: "0" })).toBe("أدخل مبلغًا صحيحًا أكبر من صفر");
     expect(validateExpense({ ...valid, amount: "-50" })).toBe("أدخل مبلغًا صحيحًا أكبر من صفر");
     expect(validateExpense({ ...valid, amount: "abc" })).toBe("أدخل مبلغًا صحيحًا أكبر من صفر");
+    expect(validateExpense({ ...valid, amount: "Infinity" })).not.toBeNull();
   });
 
   it("requires a known direction", () => {
