@@ -1,5 +1,11 @@
 # Roadmap
 
+## Current request
+- [ ] Add photo-first field receipt capture with batch selection and individual review before saving.
+- [ ] Verify receipt validation and upload failure cleanup; check the capture screen on desktop and phone.
+
+## Previous delivery (verification outstanding)
+
 - [ ] Fix backend connection (rebind secrets — .env points to stale ref).
 - [ ] Create database schema: profiles, projects, expenses + RLS + grants.
 - [ ] Create receipts storage bucket + storage RLS policies.
