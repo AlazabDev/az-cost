@@ -8,6 +8,7 @@ import DashboardPage from "@/pages/dashboard";
 import ProjectsPage from "@/pages/projects";
 import ExpensesPage from "@/pages/expenses";
 import ReportsPage from "@/pages/reports";
+import FinancePage from "@/pages/finance";
 import NotFound from "@/pages/not-found";
 
 function Protected({ children }: { children: React.ReactNode }) {
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/finance" element={<FinancePage />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
