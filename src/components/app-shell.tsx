@@ -5,6 +5,7 @@ import {
   IconHome2,
   IconLogout,
   IconReceipt2,
+  IconCash,
 } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ const NAV = [
   { to: "/projects", label: "المشروعات", icon: IconBuildingSkyscraper },
   { to: "/expenses", label: "المصروفات", icon: IconReceipt2 },
   { to: "/reports", label: "التقارير", icon: IconChartPie },
+  { to: "/finance", label: "المالية", icon: IconCash },
 ];
 
 /** App frame: header with brand + sign-out, nav (top on desktop, bottom on mobile). */
@@ -28,7 +30,7 @@ export function AppShell() {
             <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <IconReceipt2 className="size-5" />
             </span>
-            <span className="text-lg font-bold">UberFix</span>
+            <span className="text-lg font-bold">Az-Cost</span>
           </div>
           <nav className="hidden items-center gap-1 md:flex">
             {NAV.map(({ to, label }) => (
@@ -67,7 +69,7 @@ export function AppShell() {
       {/* Mobile bottom nav */}
       <nav
         data-no-print
-        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t bg-card/95 backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t bg-card/95 backdrop-blur md:hidden"
       >
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink
